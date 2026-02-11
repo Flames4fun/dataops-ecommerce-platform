@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+.env
+.venv
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+.python-version
+
+# Virtualenv / tooling
+.idea/
+.vscode/
+.mypy_cache/
+.pytest_cache/
+.dmypy.json
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (no subir datos ni warehouse)
+data/raw/
+data/warehouse/
+*.duckdb
+*.db
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/.dbt/
+
+# Prefect / orchestration
+*.orion/
+.prefect/
+
+# Coverage / tests
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Node (por si UI con npm)
+node_modules/
+dist/
+build/
+
+# Docker
+*.pid
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
