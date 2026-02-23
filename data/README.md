@@ -62,4 +62,4 @@ The ingestion pipeline loads each CSV into DuckDB under the `raw` schema.
 
 - Raw tables are loaded as-is (no transformations).
 - Timestamps remain strings in `raw` and will be typed in later layers.
-- Some products have a NULL category name, so joins to `raw.categories` may be missing for those rows.
+- Some products have a NULL category name, so joins to `raw.categories` may be missing for those rows. 

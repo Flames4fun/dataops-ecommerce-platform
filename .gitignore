@@ -28,16 +28,19 @@ pip-wheel-metadata/
 
 # Data (no subir datos ni warehouse)
 data/raw/
-data/warehouse/
+data/warehouse/*
+!data/warehouse/.gitkeep
 *.duckdb
 *.db
 *.sqlite
+
 
 # Logs
 logs/
 *.log
 
 # dbt
+dbt/profiles.yml
 dbt/target/
 dbt/logs/
 dbt/.dbt/
@@ -69,3 +72,8 @@ build/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+
+# dbt local/generated
+dbt/dbt_packages/
+dbt/.user.yml
