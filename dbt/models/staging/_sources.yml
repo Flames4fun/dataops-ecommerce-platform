@@ -1,0 +1,372 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Raw data ingested from Brazilian E-Commerce Public Dataset by Olist (Kaggle).
+
+      **Dataset**: olistbr/brazilian-ecommerce
+      **License**: CC BY-NC-SA 4.0 (Non-Commercial)
+      **Time range**: 2016-2018 (99,441 orders)
+      **Total rows**: 1,551,698 across 9 tables
+
+      Data is loaded as-is with minimal transformations.
+      Timestamps are stored as strings and will be cast in staging layer.
+
+    # IMPORTANT (DuckDB):
+    # - Do NOT set database: main
+    # - dbt will use target.database from profiles.yml (you have: database=ecommerce)
+    schema: raw
+
+    tables:
+      # ============================================
+      # CORE TRANSACTIONAL TABLES
+      # ============================================
+
+      - name: orders
+        description: >
+          Orders table (1 row per order).
+          Contains order lifecycle timestamps and status.
+
+        columns:
+          - name: order_id
+            description: Unique order identifier (Primary Key)
+            tests:
+              - unique
+              - not_null
+
+          - name: customer_id
+            description: Foreign key to customers table
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'customers')
+                  field: customer_id
+
+          - name: order_status
+            description: >
+              Order status: delivered, shipped, canceled, unavailable,
+              invoiced, processing, created, approved
+            tests:
+              - accepted_values:
+                  values: ['delivered', 'shipped', 'canceled', 'unavailable',
+                           'invoiced', 'processing', 'created', 'approved']
+
+          - name: order_purchase_timestamp
+            description: Order creation timestamp (when customer placed order)
+            tests:
+              - not_null
+
+          - name: order_approved_at
+            description: Payment approval timestamp
+
+          - name: order_delivered_carrier_date
+            description: Timestamp when order was handed to logistics carrier
+
+          - name: order_delivered_customer_date
+            description: Actual delivery timestamp to customer
+
+          - name: order_estimated_delivery_date
+            description: Estimated delivery date shown to customer at purchase
+
+
+      - name: order_items
+        description: >
+          Order line items (multiple items per order).
+          Grain: 1 row per (order_id, order_item_id).
+
+        columns:
+          - name: order_id
+            description: Foreign key to orders (part of composite PK)
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'orders')
+                  field: order_id
+
+          - name: order_item_id
+            description: Sequential item number within order (part of composite PK)
+            tests:
+              - not_null
+
+          - name: product_id
+            description: Foreign key to products
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'products')
+                  field: product_id
+
+          - name: seller_id
+            description: Foreign key to sellers
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'sellers')
+                  field: seller_id
+
+          - name: shipping_limit_date
+            description: Seller shipping deadline
+
+          - name: price
+            description: Item price (BRL)
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+
+          - name: freight_value
+            description: Shipping cost for this item (BRL)
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+
+        tests:
+          - dbt_utils.unique_combination_of_columns:
+              combination_of_columns:
+                - order_id
+                - order_item_id
+
+
+      - name: payments
+        description: >
+          Order payments (can be multiple per order due to installments
+          or mixed payment methods).
+          Grain: 1 row per (order_id, payment_sequential).
+
+        columns:
+          - name: order_id
+            description: Foreign key to orders (part of composite PK)
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'orders')
+                  field: order_id
+
+          - name: payment_sequential
+            description: Payment sequence number for this order (part of composite PK)
+            tests:
+              - not_null
+
+          - name: payment_type
+            description: >
+              Payment method: credit_card, boleto, voucher, debit_card,
+              not_defined
+            tests:
+              - accepted_values:
+                  values: ['credit_card', 'boleto', 'voucher', 'debit_card',
+                           'not_defined']
+
+          - name: payment_installments
+            description: Number of installments (1 = single payment)
+            tests:
+              - not_null
+              
+
+          - name: payment_value
+            description: Payment amount (BRL)
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= 0"
+
+        tests:
+          - dbt_utils.unique_combination_of_columns:
+              combination_of_columns:
+                - order_id
+                - payment_sequential
+
+
+      # ============================================
+      # CUSTOMER & PRODUCT MASTER DATA
+      # ============================================
+
+      - name: customers
+        description: >
+          Customer records with location data.
+          customer_unique_id is the natural key for deduplication.
+
+        columns:
+          - name: customer_id
+            description: Unique customer identifier (Primary Key, surrogate)
+            tests:
+              - unique
+              - not_null
+
+          - name: customer_unique_id
+            description: Natural key for customer deduplication across orders
+            tests:
+              - not_null
+
+          - name: customer_zip_code_prefix
+            description: First 5 digits of customer zip code
+            tests:
+              - not_null
+
+          - name: customer_city
+            description: Customer city name (Portuguese)
+            tests:
+              - not_null
+
+          - name: customer_state
+            description: Customer state (2-letter code, e.g., SP, RJ)
+            tests:
+              - not_null
+
+
+      - name: products
+        description: >
+          Product catalog with physical dimensions and metadata.
+          Some products may have NULL category_name.
+
+        columns:
+          - name: product_id
+            description: Unique product identifier (Primary Key)
+            tests:
+              - unique
+              - not_null
+
+          - name: product_category_name
+            description: >
+              Category in Portuguese (FK to categories).
+              NULL for uncategorized products.
+
+          - name: product_name_length
+            description: Character count of product name
+
+          - name: product_description_length
+            description: Character count of product description
+
+          - name: product_photos_qty
+            description: Number of product photos
+
+          - name: product_weight_g
+            description: Product weight in grams
+
+          - name: product_length_cm
+            description: Product length in centimeters
+
+          - name: product_height_cm
+            description: Product height in centimeters
+
+          - name: product_width_cm
+            description: Product width in centimeters
+
+
+      - name: sellers
+        description: Seller records with location data
+
+        columns:
+          - name: seller_id
+            description: Unique seller identifier (Primary Key)
+            tests:
+              - unique
+              - not_null
+
+          - name: seller_zip_code_prefix
+            description: First 5 digits of seller zip code
+            tests:
+              - not_null
+
+          - name: seller_city
+            description: Seller city name (Portuguese)
+            tests:
+              - not_null
+
+          - name: seller_state
+            description: Seller state (2-letter code)
+            tests:
+              - not_null
+
+
+      # ============================================
+      # FEEDBACK & REFERENCE DATA
+      # ============================================
+
+      - name: reviews
+        description: >
+          Customer reviews (1 per order).
+          Includes review score and optional text feedback.
+
+        columns:
+          - name: review_id
+            description: Unique review identifier (Primary Key)
+            tests:
+              - not_null
+
+          - name: order_id
+            description: Foreign key to orders
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'orders')
+                  field: order_id
+
+          - name: review_score
+            description: Review rating (1-5 stars)
+            tests:
+              - not_null
+              - accepted_values:
+                  values: [1, 2, 3, 4, 5]
+
+          - name: review_comment_title
+            description: Review title (optional)
+
+          - name: review_comment_message
+            description: Review message text (optional)
+
+          - name: review_creation_date
+            description: Review submission timestamp
+
+          - name: review_answer_timestamp
+            description: Seller/marketplace response timestamp (optional)
+
+
+      - name: categories
+        description: >
+          Product category translations (Portuguese to English).
+          71 unique categories.
+
+        columns:
+          - name: product_category_name
+            description: Category name in Portuguese (Primary Key)
+            tests:
+              - unique
+              - not_null
+
+          - name: product_category_name_english
+            description: Category name translated to English
+            tests:
+              - not_null
+
+
+      - name: geolocation
+        description: >
+          Zip code to latitude/longitude mapping (1M+ rows).
+          Used for geographic analysis and distance calculations.
+          Multiple coordinates per zip due to aggregation.
+
+          **NOTE**: Tests minimized due to table size (1M+ rows).
+          Detailed validation happens in staging layer.
+
+        meta:
+          test_group: heavy
+
+        columns:
+          - name: geolocation_zip_code_prefix
+            description: Zip code prefix (5 digits)
+            tests:
+              - not_null
+
+          - name: geolocation_lat
+            description: Latitude
+
+          - name: geolocation_lng
+            description: Longitude
+
+          - name: geolocation_city
+            description: City name (Portuguese)
+
+          - name: geolocation_state
+            description: State code (2 letters)
