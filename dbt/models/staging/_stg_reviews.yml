@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: stg_reviews
+    description: >
+      Staging layer for reviews.
+      Grain: 1 row per (review_id, order_id) in practice for uniqueness.
+
+      Transformations: cleaned comment text, parsed timestamps,
+      generated surrogate key, added flags for comment and answer presence.
+
+    config:
+      tags: ['staging', 'reviews']
+
+    columns:
+      - name: review_key
+        description: Surrogate key for review (not guaranteed unique in raw Olist reviews due duplicate rows)
+        tests:
+          - not_null
+
+      - name: review_id
+        description: Review identifier
+        tests:
+          - not_null
+
+      - name: order_id
+        description: FK to orders
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+      - name: review_score
+        description: Review rating (1-5 stars)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+
+      - name: review_comment_title
+        description: Review title (raw, optional)
+
+      - name: review_comment_message
+        description: Review message text (raw, optional)
+
+      - name: created_at
+        description: Review submission timestamp
+
+      - name: answered_at
+        description: Seller/marketplace response timestamp
+
+      - name: has_comment
+        description: Flag for reviews with text feedback (title or message)
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: has_answer
+        description: Flag for reviews with seller response
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_missing_created_at
+        description: Flag for NULL creation timestamp
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

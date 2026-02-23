@@ -1,0 +1,78 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Staging layer for customers.
+      Grain: 1 row per customer_id.
+
+      Transformations: renamed columns, cleaned location fields,
+      generated customer_key from customer_id (staging grain),
+      added quality flags.
+
+    config:
+      tags: ['staging', 'customers']
+
+    columns:
+      - name: customer_id
+        description: Customer record identifier (staging grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_unique_id
+        description: Natural key for customer deduplication across orders
+        tests:
+          - not_null
+
+      - name: customer_key
+        description: Surrogate key generated from customer_id for staging row uniqueness
+        tests:
+          - unique:
+              where: "customer_key is not null"
+          - not_null:
+              where: "is_missing_natural_key = false"
+
+      - name: zip_code_prefix
+        description: First 5 digits of customer zip code
+        tests:
+          - not_null
+
+      - name: city
+        description: Customer city name (Portuguese)
+        tests:
+          - not_null
+
+      - name: state
+        description: Customer state code (2 letters)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
+
+      - name: zip_code_clean
+        description: Cleaned zip code (trimmed)
+
+      - name: city_clean
+        description: Cleaned city (trimmed, uppercased)
+
+      - name: state_clean
+        description: Cleaned customer state (trimmed, uppercased)
+        tests:
+          - accepted_values:
+              values: ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
+              where: "state_clean is not null"
+
+      - name: is_missing_natural_key
+        description: Flag for NULL customer_unique_id
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_missing_location
+        description: Flag for NULL location fields
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

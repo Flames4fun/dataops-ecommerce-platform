@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: stg_payments
+    description: >
+      Staging layer for payments.
+      Grain: 1 row per (order_id, payment_sequential).
+
+      Transformations: cleaned payment_type, generated surrogate key,
+      added validation flags for business rules.
+
+    config:
+      tags: ['staging', 'payments']
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - payment_sequential
+
+    columns:
+      - name: payment_key
+        description: Surrogate key for payment record
+        tests:
+          - unique:
+              where: "payment_key is not null"
+          - not_null:
+              where: "order_id is not null and payment_sequential is not null"
+
+      - name: order_id
+        description: FK to orders
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+      - name: payment_sequential
+        description: Payment sequence number within order
+        tests:
+          - not_null
+
+      - name: payment_type
+        description: Payment method (raw)
+        tests:
+          - not_null
+
+      - name: payment_type_clean
+        description: Cleaned payment method (lowercase, trimmed)
+        tests:
+          - accepted_values:
+              values: ['credit_card', 'boleto', 'voucher', 'debit_card', 'not_defined']
+              where: "payment_type_clean is not null"
+
+      - name: payment_installments
+        description: Number of installments
+        tests:
+          - not_null
+          
+
+      - name: payment_value
+        description: Payment amount (BRL)
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: is_negative_value
+        description: Flag for payments with value < 0
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_invalid_installments
+        description: Flag for installments < 1
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_excessive_installments
+        description: Flag for card payments with installments > 24
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

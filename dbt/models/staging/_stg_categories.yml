@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: stg_categories
+    description: >
+      Staging layer for product categories.
+      Grain: 1 row per category_name_pt.
+
+      Transformations: cleaned category names (trimmed, lowercased),
+      generated surrogate key.
+
+    config:
+      tags: ['staging', 'categories']
+
+    columns:
+      - name: category_key
+        description: Surrogate key for category
+        tests:
+          - unique:
+              where: "category_key is not null"
+          - not_null:
+              where: "category_name_pt is not null"
+
+      - name: category_name_pt
+        description: Category name in Portuguese
+        tests:
+          - unique
+          - not_null
+
+      - name: category_name_en
+        description: Category name in English

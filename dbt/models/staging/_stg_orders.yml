@@ -1,0 +1,91 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: >
+      Staging layer for orders.
+      Grain: 1 row per order_id.
+
+      Transformations: parsed timestamps to proper types, calculated
+      delivery metrics, added status flags.
+
+    config:
+      tags: ['staging', 'orders']
+
+    columns:
+      - name: order_id
+        description: Order identifier
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: FK to customers
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+
+      - name: order_status
+        description: Order lifecycle status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['delivered', 'shipped', 'canceled', 'unavailable',
+                       'invoiced', 'processing', 'created', 'approved']
+
+      - name: purchased_at
+        description: Timestamp when order was created
+
+      - name: approved_at
+        description: Timestamp when payment was approved
+
+      - name: delivered_carrier_at
+        description: Timestamp when order was handed to carrier
+
+      - name: delivered_customer_at
+        description: Timestamp when order was delivered to customer
+
+      - name: estimated_delivery_at
+        description: Estimated delivery date shown at purchase
+
+      - name: days_to_approve
+        description: Days between purchase and payment approval
+
+      - name: days_to_carrier
+        description: Days between purchase and carrier handoff
+
+      - name: days_to_delivery
+        description: Days between purchase and customer delivery
+
+      - name: delivery_delay_days
+        description: Days difference between actual and estimated delivery (positive = late, negative = early)
+
+      - name: is_late_delivery
+        description: Flag for deliveries past estimated date
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_canceled
+        description: Flag for canceled orders
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_delivered
+        description: Flag for delivered orders
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_missing_purchased_at
+        description: Flag for NULL purchase timestamp
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: stg_order_items
+    description: >
+      Staging layer for order line items.
+      Grain: 1 row per (order_id, order_item_id).
+
+      Transformations: parsed shipping_limit_date, calculated item_total,
+      generated surrogate key, added validation flags.
+
+    config:
+      tags: ['staging', 'order_items']
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - order_item_id
+
+    columns:
+      - name: order_item_key
+        description: Surrogate key for line item
+        tests:
+          - unique:
+              where: "order_item_key is not null"
+          - not_null:
+              where: "order_id is not null and order_item_id is not null"
+
+      - name: order_id
+        description: FK to orders
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+      - name: order_item_id
+        description: Sequential item number within order
+        tests:
+          - not_null
+
+      - name: product_id
+        description: FK to products
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+
+      - name: seller_id
+        description: FK to sellers
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sellers')
+              field: seller_id
+
+      - name: shipping_limit_at
+        description: Seller shipping deadline timestamp
+
+      - name: price
+        description: Item price in BRL
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: freight_value
+        description: Shipping cost for item in BRL
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: item_total
+        description: Price + freight_value
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: is_zero_price
+        description: Flag for items with price <= 0
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_negative_freight
+        description: Flag for negative freight values
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

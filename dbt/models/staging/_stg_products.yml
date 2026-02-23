@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: stg_products
+    description: >
+      Staging layer for products.
+      Grain: 1 row per product_id.
+
+      Transformations: cleaned category name, calculated volume and density,
+      added validation flags.
+
+    config:
+      tags: ['staging', 'products']
+
+    columns:
+      - name: product_key
+        description: Surrogate key for product
+        tests:
+          - unique:
+              where: "product_key is not null"
+          - not_null
+
+      - name: product_id
+        description: Product identifier
+        tests:
+          - unique
+          - not_null
+
+      - name: product_category_name
+        description: Category name in Portuguese (raw)
+
+      - name: category_name_clean
+        description: Cleaned category name (lowercase, trimmed)
+
+      - name: product_name_length
+        description: Character count of product name
+
+      - name: product_description_length
+        description: Character count of product description
+
+      - name: product_photos_qty
+        description: Number of product photos
+
+      - name: product_weight_g
+        description: Product weight in grams (raw, may be null)
+
+      - name: product_length_cm
+        description: Product length in cm (raw, may be null)
+
+      - name: product_height_cm
+        description: Product height in cm (raw, may be null)
+
+      - name: product_width_cm
+        description: Product width in cm (raw, may be null)
+
+      - name: weight_g
+        description: Product weight in grams
+
+      - name: length_cm
+        description: Product length in cm
+
+      - name: height_cm
+        description: Product height in cm
+
+      - name: width_cm
+        description: Product width in cm
+
+      - name: volume_cm3
+        description: Calculated volume (length * height * width)
+
+      - name: density_kg_per_m3
+        description: Calculated density in kg/m³
+
+      - name: is_missing_category
+        description: Flag for NULL category_name
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_missing_dimensions
+        description: Flag for NULL dimensions
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
