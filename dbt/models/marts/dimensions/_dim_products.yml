@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: dim_products
+    description: >
+      Product dimension.
+      Grain: 1 row per product_id.
+
+      Built from stg_products and enriched with English category labels
+      from stg_categories (PT -> EN translation).
+
+    config:
+      tags: ['marts', 'dimension', 'products']
+
+    columns:
+      - name: product_id
+        description: Product identifier (dimension grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: category_name_pt
+        description: Product category name in Portuguese
+
+      - name: category_name_en
+        description: Product category name in English
+
+      - name: product_name_length
+        description: Product name length in characters
+
+      - name: product_description_length
+        description: Product description length in characters
+
+      - name: product_photos_qty
+        description: Number of product photos
+
+      - name: weight_g
+        description: Product weight in grams
+
+      - name: length_cm
+        description: Product length in centimeters
+
+      - name: height_cm
+        description: Product height in centimeters
+
+      - name: width_cm
+        description: Product width in centimeters
+
+      - name: volume_cm3
+        description: Product volume in cubic centimeters
+
+      - name: density_kg_per_m3
+        description: Product density in kilograms per cubic meter
+
+      - name: is_missing_category
+        description: True when category is missing
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_missing_dimensions
+        description: True when one or more dimensions/weight are missing
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

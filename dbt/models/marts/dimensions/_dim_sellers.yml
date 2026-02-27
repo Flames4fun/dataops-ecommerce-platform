@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: dim_sellers
+    description: >
+      Seller dimension.
+      Grain: 1 row per seller_id.
+
+      Built from stg_sellers with deterministic deduplication by seller_id,
+      prioritizing complete and cleaned location attributes.
+
+    config:
+      tags: ['marts', 'dimension', 'sellers']
+
+    columns:
+      - name: seller_id
+        description: Seller identifier (dimension grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: seller_zip_code_prefix
+        description: Cleaned seller zip code prefix
+
+      - name: seller_city
+        description: Cleaned seller city
+
+      - name: seller_state
+        description: Cleaned seller state
+
+      - name: is_missing_location
+        description: True when any cleaned location attribute is missing
+        tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
