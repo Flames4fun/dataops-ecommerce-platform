@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Customer dimension.
+      Grain: 1 row per customer_unique_id.
+
+      Built from stg_customers with deterministic deduplication by
+      customer_unique_id (latest tie-break via max customer_id).
+      Optionally enriched with order activity from int_orders_enriched.
+
+    config:
+      tags: ['marts', 'dimension', 'customers']
+
+    columns:
+      - name: customer_unique_id
+        description: Natural customer identifier (dimension grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Representative customer surrogate from staging records
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: customer_zip_code_prefix
+        description: Cleaned customer zip code prefix
+
+      - name: customer_city
+        description: Cleaned customer city
+
+      - name: customer_state
+        description: Cleaned customer state
+
+      - name: first_order_at
+        description: Timestamp of customer's first purchase
+
+      - name: last_order_at
+        description: Timestamp of customer's latest purchase
+
+      - name: orders_count
+        description: Total distinct orders for the customer

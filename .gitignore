@@ -8,7 +8,7 @@ __pycache__/
 *.egg-info/
 .eggs/
 .env
-.venv
+.venv/
 venv/
 env/
 ENV/
@@ -31,6 +31,7 @@ data/raw/
 data/warehouse/*
 !data/warehouse/.gitkeep
 *.duckdb
+data/warehouse/*.duckdb
 *.db
 *.sqlite
 
@@ -77,3 +78,6 @@ build/
 # dbt local/generated
 dbt/dbt_packages/
 dbt/.user.yml
+
+# OS
+.DS_Store
