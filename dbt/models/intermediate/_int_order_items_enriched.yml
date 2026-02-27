@@ -1,0 +1,105 @@
+version: 2
+
+models:
+  - name: int_order_items_enriched
+    description: >
+      Intermediate layer for order items enriched with product,
+      category (English), and seller attributes.
+      Grain: 1 row per order_item_key.
+
+    config:
+      tags: ['intermediate', 'order_items']
+
+    columns:
+      - name: order_item_key
+        description: Surrogate key for the order item (model grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: order_id
+        description: Order identifier for the line item
+        tests:
+          - not_null
+
+      - name: order_item_id
+        description: Sequential item number inside the order
+        tests:
+          - not_null
+
+      - name: product_id
+        description: Product identifier
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+              config:
+                severity: warn
+
+      - name: seller_id
+        description: Seller identifier
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sellers')
+              field: seller_id
+              config:
+                severity: warn
+
+      - name: price
+        description: Item price amount
+
+      - name: freight_value
+        description: Freight amount for the item
+
+      - name: item_total
+        description: Total item amount (price + freight)
+
+      - name: is_zero_price
+        description: True when item price is zero or negative
+
+      - name: is_negative_freight
+        description: True when freight value is negative
+
+      - name: product_category_name
+        description: Product category name in Portuguese
+
+      - name: category_name_en
+        description: Product category name in English
+
+      - name: product_name_length
+        description: Product name length in characters
+
+      - name: product_description_length
+        description: Product description length in characters
+
+      - name: product_photos_qty
+        description: Number of product photos
+
+      - name: weight_g
+        description: Product weight in grams
+
+      - name: length_cm
+        description: Product length in centimeters
+
+      - name: height_cm
+        description: Product height in centimeters
+
+      - name: width_cm
+        description: Product width in centimeters
+
+      - name: volume_cm3
+        description: Product volume in cubic centimeters
+
+      - name: density_kg_per_m3
+        description: Product density in kilograms per cubic meter
+
+      - name: seller_city
+        description: Cleaned seller city
+
+      - name: seller_state
+        description: Cleaned seller state
+
+      - name: seller_zip_code
+        description: Cleaned seller zip code prefix

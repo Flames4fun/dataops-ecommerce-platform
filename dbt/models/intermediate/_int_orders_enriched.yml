@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: int_orders_enriched
+    description: >
+      Intermediate layer for orders enriched with customer identifiers.
+      Grain: 1 row per order_id.
+
+      Base model: stg_orders.
+      Dimensional enrichment: stg_customers (customer_unique_id).
+
+    config:
+      tags: ['intermediate', 'orders']
+
+    columns:
+      - name: order_id
+        description: Order identifier (model grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: FK to customer record used in orders grain
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+              config:
+                severity: warn
+
+      - name: customer_unique_id
+        description: Natural customer identifier for future customer dimension dedup
+
+      - name: order_status
+        description: Order lifecycle status
+
+      - name: purchased_at
+        description: Timestamp when the customer placed the order
+
+      - name: approved_at
+        description: Timestamp when the order payment was approved
+
+      - name: delivered_carrier_at
+        description: Timestamp when the order was handed to the carrier
+
+      - name: delivered_customer_at
+        description: Timestamp when the order was delivered to the customer
+
+      - name: estimated_delivery_at
+        description: Estimated delivery timestamp informed at purchase
+
+      - name: days_to_approve
+        description: Number of days between purchase and payment approval
+
+      - name: days_to_carrier
+        description: Number of days between purchase and carrier handoff
+
+      - name: days_to_delivery
+        description: Number of days between purchase and customer delivery
+
+      - name: delivery_delay_days
+        description: Delivery delay in days versus estimate (positive means late)
+
+      - name: is_late_delivery
+        description: True when delivery happened after the estimated date
+
+      - name: is_canceled
+        description: True when the order status is canceled
+
+      - name: is_delivered
+        description: True when the order status is delivered
+
+      - name: is_missing_purchased_at
+        description: True when purchase timestamp is missing
