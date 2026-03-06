@@ -1,6 +1,6 @@
 # DataOps E-commerce Platform
 
-Production-like, end-to-end **Data Engineering** project: ingest → warehouse → transform → test → orchestrate → serve.
+Production-like, end-to-end **Data Engineering** project: ingest -> warehouse -> transform -> test -> orchestrate -> serve.
 
 > Portfolio focus: reproducibility, data quality, schema-as-code, and deployable components.
 
@@ -9,8 +9,8 @@ Production-like, end-to-end **Data Engineering** project: ingest → warehouse �
 ## What this project demonstrates
 
 - **Idempotent ingestion** into a local analytical warehouse
-- **Warehouse-first modeling** with dbt (staging → marts)
-- **Automated data quality** (pytest + dbt tests)
+- **Warehouse-first modeling** with dbt (`staging -> intermediate -> marts`)
+- **Automated data quality** (`pytest` + `dbt test` + data reconciliation tests)
 - **Orchestration-ready** workflows (Prefect flows)
 - **API serving layer** for curated datasets (FastAPI)
 - **Observability hooks** (structured logs + basic metrics)
@@ -19,11 +19,11 @@ Production-like, end-to-end **Data Engineering** project: ingest → warehouse �
 
 ## Architecture
 
-**CSV dataset** → **Ingestion (Python)** → **DuckDB (`warehouse/ecommerce.duckdb`)** → **dbt models** → **FastAPI endpoints**
+**CSV dataset** -> **Ingestion (Python)** -> **DuckDB (`data/warehouse/ecommerce.duckdb`)** -> **dbt models** -> **FastAPI endpoints**
 
 Quality gates:
 - `pytest` (pipeline/unit checks)
-- `dbt test` (schema + business rules)
+- `dbt test` (schema + business rules + reconciliation tests)
 
 Orchestration (planned):
 - Prefect flows schedule ingestion + dbt
@@ -32,11 +32,11 @@ Orchestration (planned):
 
 ## Tech stack
 
-| Layer | Technology | Why it’s here |
+| Layer | Technology | Why it is here |
 | --- | --- | --- |
 | Language | Python 3.11+ | Pipelines, orchestration, API |
 | Warehouse | DuckDB | Portable analytics warehouse |
-| Transformations | dbt | SQL modeling + tests |
+| Transformations | dbt | SQL modeling + tests + docs |
 | Orchestration | Prefect | Scheduling + retries |
 | API | FastAPI | Serve curated data products |
 | Testing | pytest | Unit/integration checks |
@@ -48,11 +48,11 @@ Orchestration (planned):
 
 | Phase | Status | Deliverable |
 | --- | :---: | --- |
-| 1 — Raw ingestion | ✅ | Download + ingest + validation tests |
-| 2 — dbt transformations | 🚧 | Staging + marts + dbt tests |
-| 3 — Orchestration | ⏳ | Prefect flows + schedules |
-| 4 — API serving | ⏳ | FastAPI endpoints over marts |
-| 5 — Observability | ⏳ | Logs + metrics + basic dashboards |
+| 1 - Raw ingestion | Completed | Download + ingest + validation tests |
+| 2 - dbt transformations | Completed | `staging` + `intermediate` + `marts` + `facts` + `dbt tests` + `reconciliation` |
+| 3 - Orchestration | In progress | Prefect flows + schedules |
+| 4 - API serving | In progress | FastAPI endpoints over marts |
+| 5 - Observability | In progress | Logs + metrics + basic dashboards |
 
 ---
 
@@ -73,12 +73,12 @@ python -m venv .venv
 # Linux/Mac
 source .venv/bin/activate
 # Windows (PowerShell)
-# .venv\Scripts\Activate.ps1
+.venv\Scripts\Activate.ps1
 
 pip install -r requirements.txt
 ```
 
-### Run Phase 1 (download → ingest → validate)
+### Run Phase 1 (download -> ingest -> validate)
 
 ```bash
 # 1) Download dataset into data/raw/
@@ -92,9 +92,43 @@ pytest -q
 ```
 
 Expected:
-- `warehouse/ecommerce.duckdb` created
+- `data/warehouse/ecommerce.duckdb` created
 - 9 tables under the `raw` schema
 - tests pass
+
+### Run Phase 2 (dbt)
+
+```bash
+# 1) Validate dbt configuration and warehouse connection
+dbt debug --project-dir ./dbt --profiles-dir ./dbt
+
+# 2) Run end-to-end dbt pipeline (models + tests)
+dbt build --project-dir ./dbt --profiles-dir ./dbt
+
+# 3) Run reconciliation tests only (counts/sums)
+dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_orders_count.sql
+dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_order_items_count.sql
+dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_order_items_sums.sql
+
+# 4) Generate and serve dbt documentation locally
+dbt docs generate --project-dir ./dbt --profiles-dir ./dbt
+dbt docs serve --project-dir ./dbt --profiles-dir ./dbt
+```
+
+Important:
+- `dbt/target/` and `dbt/logs/` are intentionally gitignored.
+- Generated docs artifacts (`manifest.json`, `catalog.json`, `index.html`, etc.) are local build outputs and are not committed.
+
+### Star schema (marts)
+
+| Model | Type | Grain |
+| --- | --- | --- |
+| `dim_customers` | Dimension | 1 row per `customer_unique_id` |
+| `dim_products` | Dimension | 1 row per `product_id` |
+| `dim_sellers` | Dimension | 1 row per `seller_id` |
+| `dim_dates` | Dimension | 1 row per `date_day` |
+| `fact_orders` | Fact | 1 row per `order_id` |
+| `fact_order_items` | Fact | 1 row per `order_item_key` (derived from `order_id` + `order_item_id`) |
 
 ---
 
@@ -103,7 +137,7 @@ Expected:
 ### DuckDB CLI
 
 ```bash
-duckdb warehouse/ecommerce.duckdb
+duckdb data/warehouse/ecommerce.duckdb
 ```
 
 ```sql
@@ -139,14 +173,22 @@ print(df)
 
 ```text
 dataops-ecommerce-platform/
-├── api/                    # FastAPI app (Phase 4)
-├── dbt/                    # dbt project (Phase 2)
-├── docs/                   # Documentation (data dictionary, decisions)
-├── pipelines/              # Prefect flows (Phase 3)
-├── scripts/                # Download + ingestion + helpers
-├── tests/                  # Unit/integration tests
-├── data/                   # Local data (gitignored)
-└── warehouse/              # DuckDB file (gitignored)
+|-- api/                    # FastAPI app (Phase 4)
+|-- dbt/                    # dbt project (Phase 2)
+|   |-- models/
+|   |   |-- staging/        # Source cleanup and standardization models
+|   |   |-- intermediate/   # Reusable business logic models
+|   |   `-- marts/          # Final dimensional/fact models for analytics
+|   |-- tests/              # Custom data reconciliation tests (SQL)
+|   |-- macros/             # Reusable SQL macros
+|   `-- target/             # Generated artifacts (gitignored)
+|-- docs/                   # Documentation (data dictionary, decisions)
+|-- pipelines/              # Prefect flows (Phase 3)
+|-- scripts/                # Download + ingestion + helpers
+|-- tests/                  # Python unit/integration tests
+`-- data/                   # Local data (gitignored)
+    |-- raw/                # Source CSVs (gitignored)
+    `-- warehouse/          # DuckDB file: data/warehouse/ecommerce.duckdb (gitignored)
 ```
 
 ---
@@ -155,14 +197,15 @@ dataops-ecommerce-platform/
 
 - **Data directory**: `data/README.md` (local layout + verification)
 - **Data dictionary**: `docs/data_dictionary.md` (raw schema field-level docs)
+- **dbt docs (local)**: run `dbt docs generate` and `dbt docs serve` inside `dbt/`
 
 ---
 
-## Dataset & license
+## Dataset and license
 
 - **Dataset**: Brazilian E-Commerce Public Dataset by Olist
 - **Source**: Kaggle (`olistbr/brazilian-ecommerce`)
-- **License**: **CC BY-NC-SA 4.0 (Non-Commercial)**  
+- **License**: **CC BY-NC-SA 4.0 (Non-Commercial)**
   Do not use this dataset for commercial purposes. See the Kaggle dataset page for details.
 
 ---
@@ -175,4 +218,4 @@ This is a portfolio project. If you want to suggest improvements, open an issue.
 
 ## Project license
 
-MIT — see `LICENSE`.
+MIT - see `LICENSE`.
