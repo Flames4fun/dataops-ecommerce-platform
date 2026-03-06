@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: fact_orders
+    description: >
+      Main orders fact table.
+      Grain: 1 row per order_id.
+
+      Built from int_orders_enriched without additional joins to preserve
+      order grain and avoid row multiplication.
+
+    config:
+      tags: ['marts', 'fact', 'orders']
+
+    columns:
+      - name: order_id
+        description: Order identifier (fact grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_unique_id
+        description: FK to dim_customers.customer_unique_id
+        tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_unique_id
+              config:
+                severity: warn
+
+      - name: order_purchase_date
+        description: FK to dim_dates.date_day based on purchased_at
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_day
+              config:
+                severity: warn
+
+      - name: order_approved_date
+        description: Optional FK to dim_dates.date_day based on approved_at
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_day
+              config:
+                severity: warn
+
+      - name: order_delivered_carrier_date
+        description: Optional FK to dim_dates.date_day based on delivered_carrier_at
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_day
+              config:
+                severity: warn
+
+      - name: order_delivered_customer_date
+        description: Optional FK to dim_dates.date_day based on delivered_customer_at
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_day
+              config:
+                severity: warn
+
+      - name: order_estimated_delivery_date
+        description: Optional FK to dim_dates.date_day based on estimated_delivery_at
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_day
+              config:
+                severity: warn
