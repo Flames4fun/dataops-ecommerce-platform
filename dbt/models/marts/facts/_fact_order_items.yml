@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: fact_order_items
+    description: >
+      Order items fact table.
+      Grain: 1 row per order_item_key.
+
+      Built from int_order_items_enriched without redoing product/category/seller
+      joins. Adds order_purchase_date from int_orders_enriched through a safe
+      many-to-one join on order_id.
+
+    config:
+      tags: ['marts', 'fact', 'order_items']
+
+    columns:
+      - name: order_item_key
+        description: Surrogate key for the order item (fact grain)
+        tests:
+          - unique
+          - not_null
+
+      - name: order_id
+        description: FK to fact_orders.order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fact_orders')
+              field: order_id
+              config:
+                severity: warn
+
+      - name: product_id
+        description: FK to dim_products.product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+              config:
+                severity: warn
+
+      - name: seller_id
+        description: FK to dim_sellers.seller_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_sellers')
+              field: seller_id
+              config:
+                severity: warn
+
+      - name: order_purchase_date
+        description: FK to dim_dates.date_day from the parent order purchase date
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_day
+              config:
+                severity: warn
