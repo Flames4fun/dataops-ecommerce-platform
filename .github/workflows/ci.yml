@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WAREHOUSE_PATH: data/warehouse/ecommerce.duckdb
+      DBT_PROFILES_DIR: .ci_dbt_profiles
 
     steps:
       - name: Checkout repository
@@ -35,8 +36,27 @@ jobs:
       - name: Run pytest
         run: pytest -q
 
+      - name: Create dbt profile for CI
+        run: |
+          mkdir -p "${DBT_PROFILES_DIR}"
+          cat > "${DBT_PROFILES_DIR}/profiles.yml" <<'YAML'
+          dataops_ecommerce:
+            target: dev
+            outputs:
+              dev:
+                type: duckdb
+                path: "{{ env_var('WAREHOUSE_PATH', 'data/warehouse/ecommerce.duckdb') }}"
+                schema: main
+                threads: 4
+                extensions:
+                  - parquet
+                  - json
+                settings:
+                  memory_limit: "4GB"
+          YAML
+
       - name: Install dbt packages
-        run: dbt deps --project-dir ./dbt --profiles-dir ./dbt
+        run: dbt deps --project-dir ./dbt --profiles-dir "${DBT_PROFILES_DIR}"
 
       - name: Run dbt build
-        run: dbt build --project-dir ./dbt --profiles-dir ./dbt
+        run: dbt build --project-dir ./dbt --profiles-dir "${DBT_PROFILES_DIR}"
