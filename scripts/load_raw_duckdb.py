@@ -1,38 +1,44 @@
-﻿import os
-import duckdb
+from pathlib import Path
 
-DB_PATH = os.path.join("data", "warehouse", "ecommerce.duckdb")
+from db_utils import get_connection, resolve_warehouse_path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
 
 LOADS = [
-    ("orders",       "data/raw/olist_orders_dataset.csv"),
-    ("order_items",  "data/raw/olist_order_items_dataset.csv"),
-    ("payments",     "data/raw/olist_order_payments_dataset.csv"),
-    ("customers",    "data/raw/olist_customers_dataset.csv"),
-    ("products",     "data/raw/olist_products_dataset.csv"),
-    ("sellers",      "data/raw/olist_sellers_dataset.csv"),
-    ("reviews",      "data/raw/olist_order_reviews_dataset.csv"),
-    ("categories",   "data/raw/product_category_name_translation.csv"),
-    ("geolocation",  "data/raw/olist_geolocation_dataset.csv"),
+    ("orders", "olist_orders_dataset.csv"),
+    ("order_items", "olist_order_items_dataset.csv"),
+    ("payments", "olist_order_payments_dataset.csv"),
+    ("customers", "olist_customers_dataset.csv"),
+    ("products", "olist_products_dataset.csv"),
+    ("sellers", "olist_sellers_dataset.csv"),
+    ("reviews", "olist_order_reviews_dataset.csv"),
+    ("categories", "product_category_name_translation.csv"),
+    ("geolocation", "olist_geolocation_dataset.csv"),
 ]
 
-def main():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    con = duckdb.connect(DB_PATH)
-    con.execute("create schema if not exists raw;")
 
-    for table, csv_path in LOADS:
-        if not os.path.exists(csv_path):
-            raise FileNotFoundError(f"No existe: {csv_path}")
+def main() -> None:
+    with get_connection() as conn:
+        conn.execute("create schema if not exists raw;")
 
-        con.execute(f"""
-            create or replace table raw.{table} as
-            select * from read_csv_auto('{csv_path}', header=true);
-        """)
-        count = con.execute(f"select count(*) from raw.{table}").fetchone()[0]
-        print(f"OK raw.{table}: {count:,} filas")
+        for table, filename in LOADS:
+            csv_path = RAW_DIR / filename
+            if not csv_path.exists():
+                raise FileNotFoundError(f"No existe: {csv_path}")
 
-    con.close()
-    print("Carga completada.")
+            conn.execute(
+                f"""
+                create or replace table raw.{table} as
+                select * from read_csv_auto(?, header=true);
+                """,
+                [str(csv_path)],
+            )
+            count = conn.execute(f"select count(*) from raw.{table}").fetchone()[0]
+            print(f"OK raw.{table}: {count:,} filas")
+
+    print(f"Carga completada en: {resolve_warehouse_path()}")
+
 
 if __name__ == "__main__":
     main()

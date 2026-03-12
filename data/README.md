@@ -5,7 +5,7 @@ This directory documents the project's local data layout.
 ## Structure
 
 - `data/raw/`: source CSV files downloaded from Kaggle (excluded from Git via `.gitignore`)
-- `data/warehouse/ecommerce.duckdb`: local DuckDB analytical warehouse file (excluded from Git via `.gitignore`)
+- `WAREHOUSE_PATH` (default: `data/warehouse/ecommerce.duckdb`): local DuckDB analytical warehouse file (excluded from Git via `.gitignore`)
 - Raw files are not tracked because they are:
   - Large (1.5M+ rows combined)
   - Reproducible (can be re-downloaded)
@@ -20,7 +20,7 @@ This directory documents the project's local data layout.
 
 ## Local verification (recommended)
 
-After ingestion, validate the date range directly from the warehouse (`data/warehouse/ecommerce.duckdb`):
+After ingestion, validate the date range directly from the warehouse file configured by `WAREHOUSE_PATH` (default: `data/warehouse/ecommerce.duckdb`):
 
 ```sql
 SELECT

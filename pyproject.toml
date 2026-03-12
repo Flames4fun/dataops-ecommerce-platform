@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dataops-ecommerce-platform"
+version = "0.2.0"
+description = "DataOps e-commerce ELT pipeline with DuckDB + dbt."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb>=1.4,<2.0",
+    "requests>=2.32,<3.0",
+    "pytest>=9.0,<10.0",
+    "dbt-core>=1.8,<1.9",
+    "dbt-duckdb>=1.8,<1.9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

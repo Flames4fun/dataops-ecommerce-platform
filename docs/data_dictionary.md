@@ -1,6 +1,6 @@
 # Data Dictionary — Raw Layer (`raw` schema)
 
-Field-level documentation for the **raw ingestion layer** stored in `warehouse/ecommerce.duckdb` under the `raw` schema.
+Field-level documentation for the **raw ingestion layer** stored in the DuckDB warehouse configured by `WAREHOUSE_PATH` (default: `data/warehouse/ecommerce.duckdb`) under the `raw` schema.
 
 ## Scope
 
