@@ -19,7 +19,7 @@ Production-like, end-to-end **Data Engineering** project: ingest -> warehouse ->
 
 ## Architecture
 
-**CSV dataset** -> **Ingestion (Python)** -> **DuckDB (`data/warehouse/ecommerce.duckdb`)** -> **dbt models** -> **FastAPI endpoints**
+**CSV dataset** -> **Ingestion (Python)** -> **DuckDB (`WAREHOUSE_PATH`, default: `data/warehouse/ecommerce.duckdb`)** -> **dbt models** -> **FastAPI endpoints**
 
 Quality gates:
 - `pytest` (pipeline/unit checks)
@@ -75,7 +75,13 @@ source .venv/bin/activate
 # Windows (PowerShell)
 .venv\Scripts\Activate.ps1
 
-pip install -r requirements.txt
+pip install -r requirements.lock
+
+# Optional: override warehouse path (default already works)
+# Linux/Mac
+export WAREHOUSE_PATH=data/warehouse/ecommerce.duckdb
+# Windows (PowerShell)
+$env:WAREHOUSE_PATH="data/warehouse/ecommerce.duckdb"
 ```
 
 ### Run Phase 1 (download -> ingest -> validate)
@@ -92,7 +98,7 @@ pytest -q
 ```
 
 Expected:
-- `data/warehouse/ecommerce.duckdb` created
+- warehouse file created at `WAREHOUSE_PATH` (default: `data/warehouse/ecommerce.duckdb`)
 - 9 tables under the `raw` schema
 - tests pass
 
@@ -137,7 +143,11 @@ Important:
 ### DuckDB CLI
 
 ```bash
-duckdb data/warehouse/ecommerce.duckdb
+# Linux/Mac
+duckdb "${WAREHOUSE_PATH:-data/warehouse/ecommerce.duckdb}"
+
+# Windows (PowerShell)
+duckdb $env:WAREHOUSE_PATH
 ```
 
 ```sql
@@ -197,6 +207,7 @@ dataops-ecommerce-platform/
 
 - **Data directory**: `data/README.md` (local layout + verification)
 - **Data dictionary**: `docs/data_dictionary.md` (raw schema field-level docs)
+- **Business metrics**: `docs/business_metrics.md` (GMV, AOV, cancel_rate, late_delivery_rate)
 - **dbt docs (local)**: run `dbt docs generate` and `dbt docs serve` inside `dbt/`
 
 ---

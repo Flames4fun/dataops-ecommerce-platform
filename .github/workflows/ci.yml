@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      WAREHOUSE_PATH: data/warehouse/ecommerce.duckdb
+      DBT_PROFILES_DIR: .ci_dbt_profiles
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install dependencies
+        run: pip install -r requirements.lock
+
+      - name: Download raw dataset
+        run: python scripts/download_dataset.py
+
+      - name: Ingest raw data into DuckDB
+        run: python scripts/ingest_raw.py
+
+      - name: Run pytest
+        run: pytest -q
+
+      - name: Create dbt profile for CI
+        run: |
+          mkdir -p "${DBT_PROFILES_DIR}"
+          cat > "${DBT_PROFILES_DIR}/profiles.yml" <<'YAML'
+          dataops_ecommerce:
+            target: dev
+            outputs:
+              dev:
+                type: duckdb
+                path: "{{ env_var('WAREHOUSE_PATH', 'data/warehouse/ecommerce.duckdb') }}"
+                schema: main
+                threads: 4
+                extensions:
+                  - parquet
+                  - json
+                settings:
+                  memory_limit: "4GB"
+          YAML
+
+      - name: Install dbt packages
+        run: dbt deps --project-dir ./dbt --profiles-dir "${DBT_PROFILES_DIR}"
+
+      - name: Run dbt build
+        run: dbt build --project-dir ./dbt --profiles-dir "${DBT_PROFILES_DIR}"

@@ -1,0 +1,5 @@
+duckdb==1.4.4
+requests==2.32.5
+pytest==9.0.2
+dbt-core==1.8.7
+dbt-duckdb==1.8.2
