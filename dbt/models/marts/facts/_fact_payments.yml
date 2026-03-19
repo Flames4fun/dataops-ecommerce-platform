@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: fact_payments
+    description: >
+      Payments fact table.
+      Grain: 1 row per payment_key (surrogate key of order_id + payment_sequential).
+      order_purchase_date is sourced via LEFT JOIN with int_orders_enriched on order_id.
+      Tradeoff: using int_orders_enriched avoids a mart-to-mart dependency
+      that would arise from joining fact_orders directly.
+    config:
+      tags: ['marts', 'fact', 'payments']
+    columns:
+      - name: payment_key
+        description: Surrogate key — grain of this model (order_id + payment_sequential)
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: FK to orders
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_orders_enriched')
+              field: order_id
+              config:
+                severity: warn
+
+      - name: payment_sequential
+        description: Payment sequence number within the order
+        tests:
+          - not_null
+
+      - name: payment_type
+        description: Raw payment method
+        tests:
+          - not_null
+
+      - name: payment_type_clean
+        description: Cleaned payment method (lowercase, trimmed)
+
+      - name: payment_installments
+        description: Number of installments
+        tests:
+          - not_null
+
+      - name: payment_value
+        description: Payment amount in BRL
+        tests:
+          - not_null
+
+      - name: order_purchase_date
+        description: >
+          Purchase date from int_orders_enriched via LEFT JOIN on order_id.
+          Can be null if the order has no matching record in the intermediate layer.
+
+      - name: is_negative_value
+        description: Flag for payments with value < 0
+
+      - name: is_invalid_installments
+        description: Flag for installments < 1
+
+      - name: is_excessive_installments
+        description: Flag for card payments with installments > 24
