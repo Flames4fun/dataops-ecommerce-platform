@@ -15,7 +15,7 @@ models:
     columns:
       - name: seller_id
         description: Seller identifier (dimension grain)
-        tests:
+        data_tests:
           - unique
           - not_null
 
@@ -27,10 +27,12 @@ models:
 
       - name: seller_state
         description: Cleaned seller state
+        data_tests:
+          - not_null
 
       - name: is_missing_location
         description: True when any cleaned location attribute is missing
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null

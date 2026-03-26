@@ -15,13 +15,13 @@ models:
     columns:
       - name: order_id
         description: Order identifier
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: customer_id
         description: FK to customers
-        tests:
+        data_tests:
           - not_null
           - relationships:
               to: ref('stg_customers')
@@ -29,7 +29,7 @@ models:
 
       - name: order_status
         description: Order lifecycle status
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               values: ['delivered', 'shipped', 'canceled', 'unavailable',
@@ -64,28 +64,28 @@ models:
 
       - name: is_late_delivery
         description: Flag for deliveries past estimated date
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_canceled
         description: Flag for canceled orders
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_delivered
         description: Flag for delivered orders
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_missing_purchased_at
         description: Flag for NULL purchase timestamp
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null

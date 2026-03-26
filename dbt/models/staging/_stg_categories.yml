@@ -8,6 +8,7 @@ models:
 
       Transformations: cleaned category names (trimmed, lowercased),
       generated surrogate key.
+      category_name_en is expected to be present for all rows.
 
     config:
       tags: ['staging', 'categories']
@@ -15,7 +16,7 @@ models:
     columns:
       - name: category_key
         description: Surrogate key for category
-        tests:
+        data_tests:
           - unique:
               where: "category_key is not null"
           - not_null:
@@ -23,9 +24,11 @@ models:
 
       - name: category_name_pt
         description: Category name in Portuguese
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: category_name_en
-        description: Category name in English
+        description: Category name in English (cleaned, lowercase, trimmed)
+        data_tests:
+          - not_null

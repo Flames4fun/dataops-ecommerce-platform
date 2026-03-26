@@ -16,13 +16,13 @@ models:
     columns:
       - name: order_item_key
         description: Surrogate key for the order item (fact grain)
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: order_id
         description: FK to fact_orders.order_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               to: ref('fact_orders')
@@ -32,7 +32,7 @@ models:
 
       - name: product_id
         description: FK to dim_products.product_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               to: ref('dim_products')
@@ -42,7 +42,7 @@ models:
 
       - name: seller_id
         description: FK to dim_sellers.seller_id
-        tests:
+        data_tests:
           - not_null
           - relationships:
               to: ref('dim_sellers')
@@ -52,9 +52,45 @@ models:
 
       - name: order_purchase_date
         description: FK to dim_dates.date_day from the parent order purchase date
-        tests:
+        data_tests:
+          - not_null
           - relationships:
               to: ref('dim_dates')
               field: date_day
               config:
                 severity: warn
+
+      - name: price
+        description: Item price amount in BRL
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: freight_value
+        description: Freight amount in BRL
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: item_total
+        description: Item total amount (price + freight)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: is_zero_price
+        description: True when item price is zero or negative
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_negative_freight
+        description: True when freight value is negative
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

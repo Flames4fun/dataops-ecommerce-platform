@@ -15,13 +15,14 @@ models:
     columns:
       - name: order_id
         description: Order identifier (fact grain)
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: customer_unique_id
         description: FK to dim_customers.customer_unique_id
-        tests:
+        data_tests:
+          - not_null
           - relationships:
               to: ref('dim_customers')
               field: customer_unique_id
@@ -30,7 +31,8 @@ models:
 
       - name: order_purchase_date
         description: FK to dim_dates.date_day based on purchased_at
-        tests:
+        data_tests:
+          - not_null
           - relationships:
               to: ref('dim_dates')
               field: date_day
@@ -39,7 +41,7 @@ models:
 
       - name: order_approved_date
         description: Optional FK to dim_dates.date_day based on approved_at
-        tests:
+        data_tests:
           - relationships:
               to: ref('dim_dates')
               field: date_day
@@ -48,7 +50,7 @@ models:
 
       - name: order_delivered_carrier_date
         description: Optional FK to dim_dates.date_day based on delivered_carrier_at
-        tests:
+        data_tests:
           - relationships:
               to: ref('dim_dates')
               field: date_day
@@ -57,7 +59,7 @@ models:
 
       - name: order_delivered_customer_date
         description: Optional FK to dim_dates.date_day based on delivered_customer_at
-        tests:
+        data_tests:
           - relationships:
               to: ref('dim_dates')
               field: date_day
@@ -66,9 +68,30 @@ models:
 
       - name: order_estimated_delivery_date
         description: Optional FK to dim_dates.date_day based on estimated_delivery_at
-        tests:
+        data_tests:
           - relationships:
               to: ref('dim_dates')
               field: date_day
               config:
                 severity: warn
+
+      - name: is_late_delivery
+        description: True when delivered after estimated delivery date
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_canceled
+        description: True when order_status is canceled
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
+
+      - name: is_delivered
+        description: True when order_status is delivered
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

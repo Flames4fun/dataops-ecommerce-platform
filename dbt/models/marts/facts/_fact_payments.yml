@@ -12,42 +12,44 @@ models:
       tags: ['marts', 'fact', 'payments']
     columns:
       - name: payment_key
-        description: Surrogate key — grain of this model (order_id + payment_sequential)
-        tests:
+        description: Surrogate key - grain of this model (order_id + payment_sequential)
+        data_tests:
           - not_null
           - unique
 
       - name: order_id
         description: FK to orders
-        tests:
+        data_tests:
           - not_null
           - relationships:
               to: ref('int_orders_enriched')
               field: order_id
               config:
-                severity: warn
+                severity: error
 
       - name: payment_sequential
         description: Payment sequence number within the order
-        tests:
+        data_tests:
           - not_null
 
       - name: payment_type
         description: Raw payment method
-        tests:
+        data_tests:
           - not_null
 
       - name: payment_type_clean
         description: Cleaned payment method (lowercase, trimmed)
+        data_tests:
+          - not_null
 
       - name: payment_installments
         description: Number of installments
-        tests:
+        data_tests:
           - not_null
 
       - name: payment_value
         description: Payment amount in BRL
-        tests:
+        data_tests:
           - not_null
 
       - name: order_purchase_date
@@ -57,9 +59,21 @@ models:
 
       - name: is_negative_value
         description: Flag for payments with value < 0
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
 
       - name: is_invalid_installments
         description: Flag for installments < 1
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null
 
       - name: is_excessive_installments
         description: Flag for card payments with installments > 24
+        data_tests:
+          - accepted_values:
+              values: [true, false]
+          - not_null

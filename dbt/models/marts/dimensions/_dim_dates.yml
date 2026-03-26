@@ -15,55 +15,58 @@ models:
     columns:
       - name: date_day
         description: Calendar date (dimension grain)
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: year
         description: Calendar year
-        tests:
+        data_tests:
           - not_null
 
       - name: quarter
         description: Calendar quarter number (1-4)
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4]
 
       - name: month
         description: Calendar month number (1-12)
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
       - name: year_month
         description: Year and month formatted as YYYY-MM
-        tests:
+        data_tests:
           - not_null
 
       - name: iso_year
         description: ISO week-numbering year
+        data_tests:
+          - not_null
 
       - name: week_of_year
         description: ISO week number within year
-        tests:
+        data_tests:
           - not_null
 
       - name: year_week
         description: ISO year-week formatted as YYYY-WW
-        tests:
+        data_tests:
           - not_null
 
       - name: day_of_month
         description: Day number within month (1-31)
-        tests:
+        data_tests:
           - not_null
 
       - name: day_of_week
         description: ISO day of week (Monday=1 to Sunday=7)
-        tests:
+        data_tests:
+          - not_null
           - accepted_values:
               values: [1, 2, 3, 4, 5, 6, 7]
 
@@ -75,49 +78,49 @@ models:
 
       - name: is_weekend
         description: True for Saturday and Sunday
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_month_start
         description: True when date is first day of month
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_month_end
         description: True when date is last day of month
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_quarter_start
         description: True when date is first day of quarter
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_quarter_end
         description: True when date is last day of quarter
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_year_start
         description: True when date is first day of year
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_year_end
         description: True when date is last day of year
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null

@@ -16,16 +16,14 @@ models:
     columns:
       - name: customer_unique_id
         description: Natural customer identifier (dimension grain)
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: customer_id
         description: Representative customer surrogate from staging records
-        tests:
-          - not_null:
-              config:
-                severity: warn
+        data_tests:
+          - not_null
 
       - name: customer_zip_code_prefix
         description: Cleaned customer zip code prefix
@@ -44,3 +42,7 @@ models:
 
       - name: orders_count
         description: Total distinct orders for the customer
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
