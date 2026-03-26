@@ -12,20 +12,26 @@ models:
     config:
       tags: ['staging', 'reviews']
 
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - review_id
+            - order_id
+
     columns:
       - name: review_key
         description: Surrogate key for review (not guaranteed unique in raw Olist reviews due duplicate rows)
-        tests:
+        data_tests:
           - not_null
 
       - name: review_id
         description: Review identifier
-        tests:
+        data_tests:
           - not_null
 
       - name: order_id
         description: FK to orders
-        tests:
+        data_tests:
           - not_null
           - relationships:
               to: ref('stg_orders')
@@ -33,7 +39,7 @@ models:
 
       - name: review_score
         description: Review rating (1-5 stars)
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4, 5]
@@ -52,21 +58,21 @@ models:
 
       - name: has_comment
         description: Flag for reviews with text feedback (title or message)
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: has_answer
         description: Flag for reviews with seller response
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_missing_created_at
         description: Flag for NULL creation timestamp
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null

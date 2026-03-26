@@ -31,13 +31,13 @@ sources:
         columns:
           - name: order_id
             description: Unique order identifier (Primary Key)
-            tests:
+            data_tests:
               - unique
               - not_null
 
           - name: customer_id
             description: Foreign key to customers table
-            tests:
+            data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'customers')
@@ -47,14 +47,15 @@ sources:
             description: >
               Order status: delivered, shipped, canceled, unavailable,
               invoiced, processing, created, approved
-            tests:
+            data_tests:
+              - not_null
               - accepted_values:
                   values: ['delivered', 'shipped', 'canceled', 'unavailable',
                            'invoiced', 'processing', 'created', 'approved']
 
           - name: order_purchase_timestamp
             description: Order creation timestamp (when customer placed order)
-            tests:
+            data_tests:
               - not_null
 
           - name: order_approved_at
@@ -78,7 +79,7 @@ sources:
         columns:
           - name: order_id
             description: Foreign key to orders (part of composite PK)
-            tests:
+            data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'orders')
@@ -86,12 +87,12 @@ sources:
 
           - name: order_item_id
             description: Sequential item number within order (part of composite PK)
-            tests:
+            data_tests:
               - not_null
 
           - name: product_id
             description: Foreign key to products
-            tests:
+            data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'products')
@@ -99,7 +100,7 @@ sources:
 
           - name: seller_id
             description: Foreign key to sellers
-            tests:
+            data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'sellers')
@@ -110,19 +111,19 @@ sources:
 
           - name: price
             description: Item price (BRL)
-            tests:
+            data_tests:
               - not_null
               - dbt_utils.expression_is_true:
                   expression: ">= 0"
 
           - name: freight_value
             description: Shipping cost for this item (BRL)
-            tests:
+            data_tests:
               - not_null
               - dbt_utils.expression_is_true:
                   expression: ">= 0"
 
-        tests:
+        data_tests:
           - dbt_utils.unique_combination_of_columns:
               combination_of_columns:
                 - order_id
@@ -138,7 +139,7 @@ sources:
         columns:
           - name: order_id
             description: Foreign key to orders (part of composite PK)
-            tests:
+            data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'orders')
@@ -146,32 +147,33 @@ sources:
 
           - name: payment_sequential
             description: Payment sequence number for this order (part of composite PK)
-            tests:
+            data_tests:
               - not_null
 
           - name: payment_type
             description: >
               Payment method: credit_card, boleto, voucher, debit_card,
               not_defined
-            tests:
+            data_tests:
+              - not_null
               - accepted_values:
                   values: ['credit_card', 'boleto', 'voucher', 'debit_card',
                            'not_defined']
 
           - name: payment_installments
             description: Number of installments (1 = single payment)
-            tests:
+            data_tests:
               - not_null
               
 
           - name: payment_value
             description: Payment amount (BRL)
-            tests:
+            data_tests:
               - not_null
               - dbt_utils.expression_is_true:
                   expression: ">= 0"
 
-        tests:
+        data_tests:
           - dbt_utils.unique_combination_of_columns:
               combination_of_columns:
                 - order_id
@@ -190,29 +192,31 @@ sources:
         columns:
           - name: customer_id
             description: Unique customer identifier (Primary Key, surrogate)
-            tests:
+            data_tests:
               - unique
               - not_null
 
           - name: customer_unique_id
             description: Natural key for customer deduplication across orders
-            tests:
+            data_tests:
               - not_null
 
           - name: customer_zip_code_prefix
             description: First 5 digits of customer zip code
-            tests:
+            data_tests:
               - not_null
 
           - name: customer_city
             description: Customer city name (Portuguese)
-            tests:
+            data_tests:
               - not_null
 
           - name: customer_state
             description: Customer state (2-letter code, e.g., SP, RJ)
-            tests:
+            data_tests:
               - not_null
+              - accepted_values:
+                  values: ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
 
 
       - name: products
@@ -223,7 +227,7 @@ sources:
         columns:
           - name: product_id
             description: Unique product identifier (Primary Key)
-            tests:
+            data_tests:
               - unique
               - not_null
 
@@ -260,24 +264,26 @@ sources:
         columns:
           - name: seller_id
             description: Unique seller identifier (Primary Key)
-            tests:
+            data_tests:
               - unique
               - not_null
 
           - name: seller_zip_code_prefix
             description: First 5 digits of seller zip code
-            tests:
+            data_tests:
               - not_null
 
           - name: seller_city
             description: Seller city name (Portuguese)
-            tests:
+            data_tests:
               - not_null
 
           - name: seller_state
             description: Seller state (2-letter code)
-            tests:
+            data_tests:
               - not_null
+              - accepted_values:
+                  values: ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
 
 
       # ============================================
@@ -292,12 +298,12 @@ sources:
         columns:
           - name: review_id
             description: Unique review identifier (Primary Key)
-            tests:
+            data_tests:
               - not_null
 
           - name: order_id
             description: Foreign key to orders
-            tests:
+            data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'orders')
@@ -305,7 +311,7 @@ sources:
 
           - name: review_score
             description: Review rating (1-5 stars)
-            tests:
+            data_tests:
               - not_null
               - accepted_values:
                   values: [1, 2, 3, 4, 5]
@@ -331,13 +337,13 @@ sources:
         columns:
           - name: product_category_name
             description: Category name in Portuguese (Primary Key)
-            tests:
+            data_tests:
               - unique
               - not_null
 
           - name: product_category_name_english
             description: Category name translated to English
-            tests:
+            data_tests:
               - not_null
 
 
@@ -356,7 +362,7 @@ sources:
         columns:
           - name: geolocation_zip_code_prefix
             description: Zip code prefix (5 digits)
-            tests:
+            data_tests:
               - not_null
 
           - name: geolocation_lat

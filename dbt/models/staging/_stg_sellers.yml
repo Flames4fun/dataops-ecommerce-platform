@@ -15,7 +15,7 @@ models:
     columns:
       - name: seller_key
         description: Surrogate key for seller
-        tests:
+        data_tests:
           - unique:
               where: "seller_key is not null"
           - not_null:
@@ -23,22 +23,23 @@ models:
 
       - name: seller_id
         description: Seller identifier
-        tests:
+        data_tests:
           - unique
           - not_null
 
       - name: zip_code_prefix
         description: First 5 digits of seller zip code
-        tests:
+        data_tests:
           - not_null
 
       - name: city
         description: Seller city name (Portuguese)
-        tests:
+        data_tests:
           - not_null
 
       - name: state
-        tests:
+        description: Seller state code (2 letters)
+        data_tests:
           - not_null
           - accepted_values:
               values: ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
@@ -50,14 +51,15 @@ models:
         description: Cleaned city (trimmed, uppercased, nullif empty)
 
       - name: state_clean
-        tests:
+        description: Cleaned seller state (trimmed, uppercased, nullif empty)
+        data_tests:
           - accepted_values:
               values: ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
               where: "state_clean is not null"
 
       - name: is_missing_location
         description: Flag for missing/empty location fields after cleaning
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null

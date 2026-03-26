@@ -15,14 +15,14 @@ models:
     columns:
       - name: product_key
         description: Surrogate key for product
-        tests:
+        data_tests:
           - unique:
               where: "product_key is not null"
           - not_null
 
       - name: product_id
         description: Product identifier
-        tests:
+        data_tests:
           - unique
           - not_null
 
@@ -31,6 +31,9 @@ models:
 
       - name: category_name_clean
         description: Cleaned category name (lowercase, trimmed)
+        data_tests:
+          - not_null:
+              where: "product_category_name is not null"
 
       - name: product_name_length
         description: Character count of product name
@@ -73,14 +76,14 @@ models:
 
       - name: is_missing_category
         description: Flag for NULL category_name
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
 
       - name: is_missing_dimensions
         description: Flag for NULL dimensions
-        tests:
+        data_tests:
           - accepted_values:
               values: [true, false]
           - not_null
