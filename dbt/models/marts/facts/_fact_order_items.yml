@@ -12,6 +12,15 @@ models:
 
     config:
       tags: ['marts', 'fact', 'order_items']
+    meta:
+      owner:
+        name: Data Platform Team
+        email: luisfuentes.code@gmail.com
+      sla:
+        timezone: 'America/Bogota'
+        max_data_lag_hours: 24
+        expected_ready_by_local_time: '07:00'
+      criticality: high
 
     columns:
       - name: order_item_key
