@@ -1,6 +1,6 @@
-{{
+﻿{{
     config(
-        materialized='table',
+        materialized=var('benchmark_marts_materialized', 'table'),
         tags=['marts', 'fact', 'order_items']
     )
 }}
@@ -62,3 +62,4 @@ final as (
 )
 
 select * from final
+

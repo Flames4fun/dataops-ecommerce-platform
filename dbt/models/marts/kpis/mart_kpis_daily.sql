@@ -1,6 +1,6 @@
-{{
+﻿{{
     config(
-        materialized='table',
+        materialized=var('benchmark_marts_materialized', 'table'),
         tags=['marts', 'kpi', 'daily']
     )
 }}
@@ -50,4 +50,5 @@ final as (
 )
 
 select * from final
+
 

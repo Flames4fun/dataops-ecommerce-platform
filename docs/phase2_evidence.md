@@ -1,52 +1,127 @@
-# Phase 2 Evidence - dbt Build + Tests
+# Phase 2 Evidence - Core + 2.2 Closure Progress
 
-**Date:** 2026-03-06  
-**Environment:** Windows 11 + Python 3.12.10 + dbt-core 1.8.7 + dbt-duckdb adapter 1.8.2  
+**Date:** 2026-03-30  
+**Environment:** Windows 11 + Python 3.12 (`.venv`) + dbt-core 1.8.7 + dbt-duckdb 1.8.2  
 **Warehouse:** `data/warehouse/ecommerce.duckdb`
 
-## Commands executed
+## Commands Executed
 
 ```bash
-dbt debug --project-dir ./dbt --profiles-dir ./dbt
-dbt deps --project-dir ./dbt --profiles-dir ./dbt
-dbt build --project-dir ./dbt --profiles-dir ./dbt
-dbt test --project-dir ./dbt --profiles-dir ./dbt -s test_reconcile_fact_orders_count
-dbt test --project-dir ./dbt --profiles-dir ./dbt -s test_reconcile_fact_order_items_count
-dbt test --project-dir ./dbt --profiles-dir ./dbt -s test_reconcile_fact_order_items_sums
-dbt docs generate --project-dir ./dbt --profiles-dir ./dbt
+.\.venv\Scripts\python.exe scripts/download_dataset.py
+.\.venv\Scripts\python.exe scripts/ingest_raw.py
+.\.venv\Scripts\pytest.exe -q
+
+.\.venv\Scripts\dbt.exe debug --project-dir ./dbt --profiles-dir ./dbt
+.\.venv\Scripts\dbt.exe parse --project-dir ./dbt --profiles-dir ./dbt
+.\.venv\Scripts\dbt.exe build --project-dir ./dbt --profiles-dir ./dbt
+
+.\.venv\Scripts\dbt.exe test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_orders_count.sql
+.\.venv\Scripts\dbt.exe test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_order_items_count.sql
+.\.venv\Scripts\dbt.exe test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_order_items_sums.sql
+.\.venv\Scripts\dbt.exe test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_mart_kpis_daily_order_counts.sql
+.\.venv\Scripts\dbt.exe test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_mart_kpis_daily_gmv.sql
+
+.\.venv\Scripts\dbt.exe docs generate --project-dir ./dbt --profiles-dir ./dbt
+
+python scripts/benchmark_dbt_build.py --dbt-executable .venv/Scripts/dbt.exe --project-dir dbt --profiles-dir dbt --runs-per-scenario 5 --phase2-selector "mart_kpis_daily+" --clean-artifacts --warehouse-reuse-policy reuse --environment-name local
 ```
 
 ## Results
 
+### Dataset + RAW ingestion
+
+- `download_dataset.py`: all 9 dataset files available.
+- `ingest_raw.py`: pass.
+- RAW load summary:
+  - 9 tables ingested in `raw` schema
+  - total rows: `1,551,698`
+
+### Pytest (Phase 1 + ingestion validation)
+
+- Final summary: `6 passed in 0.26s`
+- Status: pass
+
 ### dbt debug
 
-- Status: `All checks passed`
-- Connection target: `data/warehouse/ecommerce.duckdb`
+- Status: pass
+- Result: `All checks passed`
 
-### dbt build
+### dbt parse (configuration + contracts hygiene)
 
-- Final summary: `PASS=235 WARN=0 ERROR=0 SKIP=0 TOTAL=235`
-- Duration: ~5.12s
-- Warning observed (non-blocking):
-  - Unused config paths in `dbt_project.yml`: `seeds.dataops_ecommerce`, `snapshots.dataops_ecommerce`
+- Status: pass
+- Result:
+  - Parse completed successfully.
+  - No deprecated schema-test syntax blocker observed for `data_tests`.
 
-### Reconciliation tests
+### dbt build (full project)
 
-- `test_reconcile_fact_orders_count`: `PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1`
-- `test_reconcile_fact_order_items_count`: `PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1`
-- `test_reconcile_fact_order_items_sums`: `PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1`
+- Final summary: `PASS=327 WARN=0 ERROR=0 SKIP=0 TOTAL=327`
+- Includes:
+  - Sources + staging + intermediate + marts + exposures
+  - Facts: `fact_orders`, `fact_order_items`, `fact_payments`
+  - KPI mart: `mart_kpis_daily`
+  - Reconciliation tests for facts and KPI mart
+- Status: pass
 
-### dbt docs
+### Reconciliation tests (targeted run)
 
-- `dbt docs generate`: successful
-- Artifact path: `dbt/target/catalog.json` (and companion artifacts in `dbt/target/`, gitignored)
-- `dbt docs serve`: not executed in this evidence run (interactive server command)
+- `test_reconcile_fact_orders_count`: pass (`PASS=1`)
+- `test_reconcile_fact_order_items_count`: pass (`PASS=1`)
+- `test_reconcile_fact_order_items_sums`: pass (`PASS=1`)
+- `test_reconcile_mart_kpis_daily_order_counts`: pass (`PASS=1`)
+- `test_reconcile_mart_kpis_daily_gmv`: pass (`PASS=1`)
 
-## Notes
+### dbt docs generate
 
-- `dbt deps` was required before `dbt build` because package macros from `dbt_utils` are referenced by tests.
-- Known data-quality gaps are modeled explicitly instead of silently dropped:
-  - Missing product category mappings are flagged via `is_missing_category`.
-  - Missing product dimensions are flagged via `is_missing_dimensions`.
-  - Order-delivery anomalies are modeled with flags such as `is_late_delivery` and `is_missing_purchased_at`.
-- Raw layer keeps source fidelity (minimal transformations), while quality and business logic are enforced in `staging`, `intermediate`, and `marts`.
+- Status: pass
+- Artifact:
+  - `dbt/target/catalog.json` generated successfully (2026-03-30)
+
+## Technical Benchmark Evidence (Phase 2.2)
+
+- Benchmark note:
+  - `docs/phase2_2_technical_benchmark.md`
+- Evidence artifacts:
+  - `artifacts/benchmarks/phase2_2_benchmark_results.json`
+  - `artifacts/benchmarks/phase2_2_benchmark_results.csv`
+
+Latest benchmark execution:
+
+- Benchmark ID: `phase2_2_20260330T183852Z`
+- Status: `completed`
+- Runs: `40` (`4 scenarios * 2 selectors * 5 repetitions`)
+- Failed runs: `0`
+- Decision supported by data:
+  - Recommended runtime setup for Phase 2.2: `marts=table`, `threads=4`
+
+## Traceability for Phase 2.2
+
+- KPI formulas and business definitions: `docs/business_metrics.md`
+- KPI model logic: `dbt/models/marts/kpis/mart_kpis_daily.sql`
+- KPI model contracts/tests: `dbt/models/marts/kpis/_mart_kpis_daily.yml`
+- KPI reconciliation tests:
+  - `dbt/tests/test_reconcile_mart_kpis_daily_order_counts.sql`
+  - `dbt/tests/test_reconcile_mart_kpis_daily_gmv.sql`
+- Payments fact contract: `dbt/models/marts/facts/_fact_payments.yml`
+- Semantic layer exposures:
+  - `dbt/models/exposures.yml` (`ecommerce_kpis_api`, `ecommerce_daily_dashboard`)
+- Ownership/SLA metadata (`meta`) on critical models:
+  - `dbt/models/marts/facts/_fact_orders.yml`
+  - `dbt/models/marts/facts/_fact_order_items.yml`
+  - `dbt/models/marts/facts/_fact_payments.yml`
+  - `dbt/models/marts/kpis/_mart_kpis_daily.yml`
+- Contract hardening migration (`tests` -> `data_tests`) validated in model/source YAML files under:
+  - `dbt/models/staging/`
+  - `dbt/models/intermediate/`
+  - `dbt/models/marts/`
+
+## Pending for Final Closure
+
+1. Validate CI execution for the current Phase 2.2 branch/PR and attach run evidence:
+   - GitHub Actions run link
+   - commit SHA and run timestamp
+   - summary result (`pytest` + `dbt build`)
+2. Prepare final PR checklist:
+   - change summary
+   - evidence links
+   - rollback/risk notes
