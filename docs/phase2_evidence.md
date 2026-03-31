@@ -115,12 +115,35 @@ Latest benchmark execution:
   - `dbt/models/intermediate/`
   - `dbt/models/marts/`
 
+## CI Evidence for Current Draft PR (Phase 2.2)
+
+Captured on: `2026-03-31T18:56:04Z` (UTC)
+
+- Repository: `Flames4fun/dataops-ecommerce-platform`
+- Pull Request: `#9` (draft)
+- Branch: `phase2-2-semantic-layer`
+- Workflow: `ci` (`.github/workflows/ci.yml`)
+- Run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23762700875`
+- Run ID: `23762700875`
+- Job ID: `69234142268` (`validate`)
+- Commit SHA: `45c85aa4fd0c6a5ba9ded76a5d66f868a061bd7c`
+- Event: `pull_request`
+- Run created at: `2026-03-30T19:08:35Z`
+- Run updated at: `2026-03-30T19:09:38Z`
+- Workflow result: `success`
+
+Step-level quality gate results:
+
+- `Run pytest`: `success` (`2026-03-30T19:09:16Z` -> `2026-03-30T19:09:17Z`)
+- `Run dbt build`: `success` (`2026-03-30T19:09:19Z` -> `2026-03-30T19:09:35Z`)
+
+Machine-readable evidence artifact:
+
+- `artifacts/ci/phase2_2_ci_evidence.json`
+
 ## Pending for Final Closure
 
-1. Validate CI execution for the current Phase 2.2 branch/PR and attach run evidence:
-   - GitHub Actions run link
-   - commit SHA and run timestamp
-   - summary result (`pytest` + `dbt build`)
+1. Keep PR in draft or switch to ready-for-review, depending on release decision for final closure.
 2. Prepare final PR checklist:
    - change summary
    - evidence links
