@@ -37,9 +37,9 @@ It is intended for maintainers and reviewers as an auditable delivery reference.
     - reconciliation tests (individual): all pass (`5/5`)
     - benchmark status: `completed` (`40` runs, `0` failed)
   - Latest CI evidence for current draft PR (`#9`, branch `phase2-2-semantic-layer`):
-    - run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23762700875`
-    - commit SHA: `45c85aa4fd0c6a5ba9ded76a5d66f868a061bd7c`
-    - run window (UTC): `2026-03-30T19:08:35Z` -> `2026-03-30T19:09:38Z`
+    - run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23814927097`
+    - commit SHA: `78ea61d3daaff2455c170a97549c74ba51b7e5db`
+    - run window (UTC): `2026-03-31T19:12:21Z` -> `2026-03-31T19:13:07Z`
     - quality gates in CI:
       - `Run pytest`: success
       - `Run dbt build`: success

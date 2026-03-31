@@ -117,25 +117,25 @@ Latest benchmark execution:
 
 ## CI Evidence for Current Draft PR (Phase 2.2)
 
-Captured on: `2026-03-31T18:56:04Z` (UTC)
+Captured on: `2026-03-31T19:24:56Z` (UTC)
 
 - Repository: `Flames4fun/dataops-ecommerce-platform`
 - Pull Request: `#9` (draft)
 - Branch: `phase2-2-semantic-layer`
 - Workflow: `ci` (`.github/workflows/ci.yml`)
-- Run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23762700875`
-- Run ID: `23762700875`
-- Job ID: `69234142268` (`validate`)
-- Commit SHA: `45c85aa4fd0c6a5ba9ded76a5d66f868a061bd7c`
+- Run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23814927097`
+- Run ID: `23814927097`
+- Job ID: `69411768295` (`validate`)
+- Commit SHA: `78ea61d3daaff2455c170a97549c74ba51b7e5db`
 - Event: `pull_request`
-- Run created at: `2026-03-30T19:08:35Z`
-- Run updated at: `2026-03-30T19:09:38Z`
+- Run created at: `2026-03-31T19:12:21Z`
+- Run updated at: `2026-03-31T19:13:07Z`
 - Workflow result: `success`
 
 Step-level quality gate results:
 
-- `Run pytest`: `success` (`2026-03-30T19:09:16Z` -> `2026-03-30T19:09:17Z`)
-- `Run dbt build`: `success` (`2026-03-30T19:09:19Z` -> `2026-03-30T19:09:35Z`)
+- `Run pytest`: `success` (`2026-03-31T19:12:48Z` -> `2026-03-31T19:12:48Z`)
+- `Run dbt build`: `success` (`2026-03-31T19:12:50Z` -> `2026-03-31T19:13:05Z`)
 
 Machine-readable evidence artifact:
 

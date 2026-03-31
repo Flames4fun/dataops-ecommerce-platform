@@ -49,7 +49,7 @@ Orchestration (planned):
 | Phase | Status | Deliverable |
 | --- | :---: | --- |
 | 1 - Raw ingestion | Completed | Download + ingest + validation tests |
-| 2 - dbt transformations | Completed (core) / Phase 2.2 local closure evidence complete (CI evidence pending) | `staging` + `intermediate` + `marts` + `facts` + `dbt tests` + `reconciliation` + `fact_payments` + `mart_kpis_daily` + `exposures` + `owner/SLA metadata` + `technical benchmark` |
+| 2 - dbt transformations | Completed (core) / Phase 2.2 ready to close (local + CI evidence captured on latest draft PR SHA) | `staging` + `intermediate` + `marts` + `facts` + `dbt tests` + `reconciliation` + `fact_payments` + `mart_kpis_daily` + `exposures` + `owner/SLA metadata` + `technical benchmark` |
 | 3 - Orchestration | Planned | Prefect flows + schedules |
 | 4 - API serving | Planned | FastAPI endpoints over marts |
 | 5 - Observability | Planned | Logs + metrics + basic dashboards |
