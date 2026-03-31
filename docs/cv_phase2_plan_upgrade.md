@@ -36,10 +36,10 @@ It is intended for maintainers and reviewers as an auditable delivery reference.
     - `dbt docs generate`: pass (`dbt/target/catalog.json` generated)
     - reconciliation tests (individual): all pass (`5/5`)
     - benchmark status: `completed` (`40` runs, `0` failed)
-  - Latest CI evidence for current draft PR (`#9`, branch `phase2-2-semantic-layer`):
-    - run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23814927097`
-    - commit SHA: `78ea61d3daaff2455c170a97549c74ba51b7e5db`
-    - run window (UTC): `2026-03-31T19:12:21Z` -> `2026-03-31T19:13:07Z`
+  - CI evidence snapshot for current draft PR (`#9`, branch `phase2-2-semantic-layer`):
+    - run URL: `https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23815457040`
+    - commit SHA: `58e42dadda71d3a20806e69944b8628d870c6ab1`
+    - run window (UTC): `2026-03-31T19:26:05Z` -> `2026-03-31T19:27:03Z`
     - quality gates in CI:
       - `Run pytest`: success
       - `Run dbt build`: success
