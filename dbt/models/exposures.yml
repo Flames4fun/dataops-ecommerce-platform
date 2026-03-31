@@ -1,0 +1,49 @@
+version: 2
+
+exposures:
+  - name: ecommerce_kpis_api
+    label: E-commerce KPIs API
+    type: application
+    maturity: low
+    description: >
+      Planned serving endpoint for KPI consumption (Phase 4 API layer).
+      Uses curated marts/facts as the semantic contract for downstream consumers.
+    depends_on:
+      - ref('mart_kpis_daily')
+      - ref('fact_orders')
+      - ref('fact_order_items')
+      - ref('fact_payments')
+    owner:
+      name: Data Platform Team
+      email: luisfuentes.code@gmail.com
+    tags: ['phase_2_2', 'semantic_layer', 'api']
+    meta:
+      domain: ecommerce
+      consumer_tier: serving
+      sla:
+        timezone: 'America/Bogota'
+        max_data_lag_hours: 24
+        expected_ready_by_local_time: '07:00'
+
+  - name: ecommerce_daily_dashboard
+    label: E-commerce Daily Dashboard
+    type: dashboard
+    maturity: low
+    description: >
+      Planned BI dashboard for daily business monitoring.
+      Anchored on mart_kpis_daily and traced to critical fact tables for drill-through.
+    depends_on:
+      - ref('mart_kpis_daily')
+      - ref('fact_orders')
+      - ref('fact_order_items')
+    owner:
+      name: Analytics Engineering Team
+      email: luisfuentes.code@gmail.com
+    tags: ['phase_2_2', 'semantic_layer', 'dashboard']
+    meta:
+      domain: ecommerce
+      consumer_tier: analytic
+      sla:
+        timezone: 'America/Bogota'
+        max_data_lag_hours: 24
+        expected_ready_by_local_time: '07:00'

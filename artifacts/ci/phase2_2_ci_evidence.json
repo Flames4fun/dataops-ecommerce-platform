@@ -1,0 +1,48 @@
+{
+  "captured_at_utc": "2026-03-31T19:33:42Z",
+  "repository": "Flames4fun/dataops-ecommerce-platform",
+  "pull_request": {
+    "number": 9,
+    "state": "open",
+    "draft": true,
+    "url": "https://github.com/Flames4fun/dataops-ecommerce-platform/pull/9"
+  },
+  "branch": "phase2-2-semantic-layer",
+  "commit_sha": "58e42dadda71d3a20806e69944b8628d870c6ab1",
+  "workflow": {
+    "name": "ci",
+    "path": ".github/workflows/ci.yml",
+    "event": "pull_request",
+    "run_id": 23815457040,
+    "run_url": "https://github.com/Flames4fun/dataops-ecommerce-platform/actions/runs/23815457040",
+    "created_at_utc": "2026-03-31T19:26:05Z",
+    "updated_at_utc": "2026-03-31T19:27:03Z",
+    "status": "completed",
+    "conclusion": "success",
+    "job": {
+      "id": 69413631700,
+      "name": "validate",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at_utc": "2026-03-31T19:26:09Z",
+      "completed_at_utc": "2026-03-31T19:27:02Z"
+    }
+  },
+  "quality_gates": [
+    {
+      "step_name": "Run pytest",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at_utc": "2026-03-31T19:26:42Z",
+      "completed_at_utc": "2026-03-31T19:26:42Z"
+    },
+    {
+      "step_name": "Run dbt build",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at_utc": "2026-03-31T19:26:45Z",
+      "completed_at_utc": "2026-03-31T19:27:00Z"
+    }
+  ],
+  "closure_note": "Phase 2.2 is intentionally not marked as closed yet; this file stores a versioned CI evidence snapshot."
+}

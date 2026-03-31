@@ -64,12 +64,3 @@ models:
         +materialized: table
         +tags: ["fact"]
 
-seeds:
-  dataops_ecommerce:
-    +schema: seeds
-    +quote_columns: false
-
-snapshots:
-  dataops_ecommerce:
-    +target_schema: snapshots
-    +tags: ["snapshots"]

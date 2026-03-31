@@ -1,6 +1,6 @@
-{{
+﻿{{
     config(
-        materialized='table',
+        materialized=var('benchmark_marts_materialized', 'table'),
         tags=['marts', 'dimension', 'sellers']
     )
 }}
@@ -44,3 +44,4 @@ deduped_sellers as (
 )
 
 select * from deduped_sellers
+

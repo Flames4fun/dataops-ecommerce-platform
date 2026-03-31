@@ -1,6 +1,6 @@
-{{
+﻿{{
     config(
-        materialized='table',
+        materialized=var('benchmark_marts_materialized', 'table'),
         tags=['marts', 'fact', 'payments']
     )
 }}

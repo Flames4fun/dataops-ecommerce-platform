@@ -93,3 +93,31 @@ group by 1;
 
 - Keep metric filters identical across dashboards and API endpoints.
 - For monthly reporting, aggregate from daily grain rather than recalculating from mixed granularities.
+
+## Auditability and Validation Map
+
+- Model source of truth: `marts.mart_kpis_daily`
+- KPI model SQL: `dbt/models/marts/kpis/mart_kpis_daily.sql`
+- KPI model contracts: `dbt/models/marts/kpis/_mart_kpis_daily.yml`
+- Contract syntax status: dbt schema tests are declared with `data_tests:` in model/source YAML files (Phase 2.2 hardening).
+- Reconciliation tests:
+  - `dbt/tests/test_reconcile_mart_kpis_daily_order_counts.sql` (order counters)
+  - `dbt/tests/test_reconcile_mart_kpis_daily_gmv.sql` (GMV and AOV denominator)
+- Run evidence document: `docs/phase2_evidence.md`
+
+## Implemented KPI Mart
+
+- Model: `marts.mart_kpis_daily`
+- Grain: 1 row per `kpi_date`
+- Included KPI columns:
+  - `gmv`
+  - `aov`
+  - `cancel_rate`
+  - `late_delivery_rate`
+- Supporting counters for traceability:
+  - `total_orders`
+  - `canceled_orders`
+  - `non_canceled_orders`
+  - `delivered_orders`
+  - `late_delivered_orders`
+  - `orders_for_aov`

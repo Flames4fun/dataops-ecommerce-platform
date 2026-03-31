@@ -10,7 +10,7 @@ Production-like, end-to-end **Data Engineering** project: ingest -> warehouse ->
 
 - **Idempotent ingestion** into a local analytical warehouse
 - **Warehouse-first modeling** with dbt (`staging -> intermediate -> marts`)
-- **Automated data quality** (`pytest` + `dbt test` + data reconciliation tests)
+- **Automated data quality** (`pytest` + `dbt test` + reconciliation tests + dbt model/source contracts via `data_tests`)
 - **Orchestration-ready** workflows (Prefect flows)
 - **API serving layer** for curated datasets (FastAPI)
 - **Observability hooks** (structured logs + basic metrics)
@@ -49,10 +49,10 @@ Orchestration (planned):
 | Phase | Status | Deliverable |
 | --- | :---: | --- |
 | 1 - Raw ingestion | Completed | Download + ingest + validation tests |
-| 2 - dbt transformations | Completed | `staging` + `intermediate` + `marts` + `facts` + `dbt tests` + `reconciliation` |
-| 3 - Orchestration | In progress | Prefect flows + schedules |
-| 4 - API serving | In progress | FastAPI endpoints over marts |
-| 5 - Observability | In progress | Logs + metrics + basic dashboards |
+| 2 - dbt transformations | Completed (core) / Phase 2.2 ready to close (local + CI evidence snapshot captured and documented) | `staging` + `intermediate` + `marts` + `facts` + `dbt tests` + `reconciliation` + `fact_payments` + `mart_kpis_daily` + `exposures` + `owner/SLA metadata` + `technical benchmark` |
+| 3 - Orchestration | Planned | Prefect flows + schedules |
+| 4 - API serving | Planned | FastAPI endpoints over marts |
+| 5 - Observability | Planned | Logs + metrics + basic dashboards |
 
 ---
 
@@ -115,15 +115,26 @@ dbt build --project-dir ./dbt --profiles-dir ./dbt
 dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_orders_count.sql
 dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_order_items_count.sql
 dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_fact_order_items_sums.sql
+dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_mart_kpis_daily_order_counts.sql
+dbt test --project-dir ./dbt --profiles-dir ./dbt --select path:tests/test_reconcile_mart_kpis_daily_gmv.sql
 
 # 4) Generate and serve dbt documentation locally
 dbt docs generate --project-dir ./dbt --profiles-dir ./dbt
 dbt docs serve --project-dir ./dbt --profiles-dir ./dbt
 ```
 
+### Run Phase 2.2 Technical Benchmark (formal evidence)
+
+```bash
+python scripts/benchmark_dbt_build.py --dbt-executable .venv/Scripts/dbt.exe --project-dir dbt --profiles-dir dbt --runs-per-scenario 5 --phase2-selector "mart_kpis_daily+" --clean-artifacts --warehouse-reuse-policy reuse --environment-name local
+```
+
 Important:
 - `dbt/target/` and `dbt/logs/` are intentionally gitignored.
 - Generated docs artifacts (`manifest.json`, `catalog.json`, `index.html`, etc.) are local build outputs and are not committed.
+- YAML schema checks in `dbt/models/**` and `dbt/models/staging/_sources.yml` use `data_tests:` (dbt deprecation-safe syntax).
+- Semantic layer metadata is declared via `dbt/models/exposures.yml` and model-level `meta` fields on critical marts/facts.
+- Formal technical benchmark evidence is generated under `artifacts/benchmarks/` and documented in `docs/phase2_2_technical_benchmark.md`.
 
 ### Star schema (marts)
 
@@ -135,6 +146,8 @@ Important:
 | `dim_dates` | Dimension | 1 row per `date_day` |
 | `fact_orders` | Fact | 1 row per `order_id` |
 | `fact_order_items` | Fact | 1 row per `order_item_key` (derived from `order_id` + `order_item_id`) |
+| `fact_payments` | Fact | 1 row per `payment_key` (derived from `order_id` + `payment_sequential`) |
+| `mart_kpis_daily` | KPI Mart | 1 row per `kpi_date` |
 
 ---
 
@@ -208,6 +221,10 @@ dataops-ecommerce-platform/
 - **Data directory**: `data/README.md` (local layout + verification)
 - **Data dictionary**: `docs/data_dictionary.md` (raw schema field-level docs)
 - **Business metrics**: `docs/business_metrics.md` (GMV, AOV, cancel_rate, late_delivery_rate)
+- **Semantic layer metadata**: `dbt/models/exposures.yml` + marts model `meta` (owner/SLA)
+- **Phase 2 evidence**: `docs/phase2_evidence.md` (commands, run results, and quality gates)
+- **Phase 2.2 technical benchmark**: `docs/phase2_2_technical_benchmark.md` (formal benchmark method, results, and decision)
+- **Phase 2.2 closure plan**: `docs/cv_phase2_plan_upgrade.md` (delivery audit, pending items, and exit criteria)
 - **dbt docs (local)**: run `dbt docs generate` and `dbt docs serve` inside `dbt/`
 
 ---
