@@ -42,7 +42,7 @@ exposures:
     tags: ['phase_2_2', 'semantic_layer', 'dashboard']
     meta:
       domain: ecommerce
-      consumer_tier: analytics
+      consumer_tier: analytic
       sla:
         timezone: 'America/Bogota'
         max_data_lag_hours: 24

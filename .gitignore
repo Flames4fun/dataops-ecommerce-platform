@@ -8,6 +8,8 @@ __pycache__/
 *.egg-info/
 .eggs/
 .env
+.env.*
+!.env.example
 .venv/
 venv/
 env/
@@ -45,6 +47,7 @@ dbt/profiles.yml
 dbt/target/
 dbt/logs/
 dbt/.dbt/
+.dbt/
 
 # Prefect / orchestration
 *.orion/
@@ -82,5 +85,3 @@ dbt/.user.yml
 # OS
 .DS_Store
 
-# Personal planning notes (not part of project deliverables)
-docs/cv_phase2_plan_upgrade.md
